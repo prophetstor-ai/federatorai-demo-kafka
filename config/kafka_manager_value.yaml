@@ -1,0 +1,4 @@
+image:
+  repository: zenko/kafka-manager
+  tag: 1.3.3.22
+zkHosts: my-kafka-zookeeper:2181

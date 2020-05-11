@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jmx
+  namespace: kafka
+  labels:
+    app: kafka
+    release: prom
+spec:
+  selector:
+    matchLabels:
+      app: kafka
+  namespaceSelector:
+    matchNames:
+    - kafka
+  endpoints:
+  - path: /metrics
+    port: "jmx-exporter"
+  

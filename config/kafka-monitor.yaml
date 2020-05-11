@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kafka-exporter
+  namespace: kafka
+  labels:
+    app: kafka-exporter
+    release: prom
+spec:
+  selector:
+    matchLabels:
+      app: kafka-exporter
+  namespaceSelector:
+    matchNames:
+    - kafka
+  endpoints:
+  - path: /metrics
+    port: "kafka-exporter"
+  

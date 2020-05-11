@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {app: producer}
+  name: producer
+  namespace: myproject
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: producer}
+  template:
+    metadata:
+      labels: {app: producer}
+    spec:
+      containers:
+      - command: [sh, -c, exec tail -f /dev/null]
+        image: strimzi/kafka:0.16.2-kafka-2.4.0
+        name: producer

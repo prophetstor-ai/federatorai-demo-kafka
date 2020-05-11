@@ -1,0 +1,18 @@
+kind: HorizontalPodAutoscaler
+apiVersion: autoscaling/v2beta1
+metadata:
+  name: consumer-hpa
+  namespace: myproject
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: consumer
+    namespace: myproject
+  minReplicas: 1
+  maxReplicas: 40
+  metrics:
+  - type: Pods
+    pods:
+      metricName: "kafka_consumergroup_lag"
+      targetAverageValue: 10000

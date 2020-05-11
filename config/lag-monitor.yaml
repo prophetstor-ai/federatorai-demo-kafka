@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kafka-lag-exporter-service
+  namespace: kafka
+  labels:
+    app.kubernetes.io/name: kafka-lag-exporter
+    release: prom
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka-lag-exporter
+  namespaceSelector:
+    matchNames:
+    - kafka
+  endpoints:
+  - path: /metrics
+    port: "8000"
+  

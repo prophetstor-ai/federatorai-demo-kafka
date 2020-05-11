@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels: {app: consumer}
+  name: consumer
+  namespace: myproject
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app.kubernetes.io/managed-by: strimzi-cluster-operator}
+  template:
+    metadata:
+      labels: {app.kubernetes.io/managed-by: strimzi-cluster-operator}
+    spec:
+      containers:
+      - command: [sh, -c, '/opt/kafka/bin/kafka-verifiable-consumer.sh --broker-list
+            my-cluster-kafka-brokers:9092 --group-instance-id $RANDOM --group-id
+            group0001 --topic topic0001']
+        image: strimzi/kafka:0.16.2-kafka-2.4.0
+        name: consumer
+        resources:
+          limits:
+            cpu: "100m"
+            memory: "500Mi"
+          requests:
+            cpu: "100m"
+            memory: "500Mi"             
+          

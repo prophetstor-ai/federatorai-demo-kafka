@@ -1,0 +1,22 @@
+apiVersion: autoscaling.containers.ai/v1alpha1
+kind: AlamedaScaler
+metadata:
+  name: test-kafka
+  namespace: myproject
+spec:
+  enableExecution: true
+  kafka:
+    consumerGroups:
+    - name: group0001
+      resource:
+        kubernetes:
+          selector:
+            matchLabels:
+              app: consumer
+    exporterNamespace: myproject
+    topics:
+    - topic0001
+  policy: stable
+  scalingTool:
+    type: hpa
+  type: kafka
