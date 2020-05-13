@@ -296,6 +296,9 @@ run_federatorai_hpa_test()
     echo -e "$(tput setaf 6)Average Consumer Group Lag is $(tput sgr 0)$(tput setaf 10)\"$federatorai_avg_lag\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Average Replica is $(tput sgr 0)$(tput setaf 10)\"$federatorai_avg_replicas\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Result files are under $file_folder/$federatorai_test_folder_name $(tput sgr 0)"
+
+    # Turn off execution before next test
+    set_alamedascaler_execution_value "false"
 }
 
 run_nonhpa_hpa_test()
@@ -924,6 +927,14 @@ if [ "$federatorai_test" = "y" ] || [ "$nonhpa_test" = "y" ] || [ "$native_cpu_t
     if [ "$partition_number_specified" != "y" ]; then
         echo -e "\n$(tput setaf 1)Error! Need to use \"-t\" to specify partition number.$(tput sgr 0)" && show_usage
     fi
+
+    case $initial_consumer_number in
+        ''|*[!0-9]*) echo -e "\n$(tput setaf 1)Error! Initial consumer pod number must be a number.$(tput sgr 0)" && show_usage;;
+    esac
+
+    case $partition_number in
+        ''|*[!0-9]*) echo -e "\n$(tput setaf 1)Error! Partition number must be a number.$(tput sgr 0)" && show_usage;;
+    esac
 fi
 
 if [ "$comparison_specified" = "y" ]; then
