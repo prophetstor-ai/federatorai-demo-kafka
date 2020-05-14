@@ -4,8 +4,8 @@ query_mode = False
 # application info
 consumer_cpu_limit = 60  # mCore
 consumer_memory_limit = 1000  # MB
-initial_consumer = 40
-partition_number = 40
+initial_consumer = 10
+partition_number = 10
 number_group = 2
 
 # yaml modification for node selector

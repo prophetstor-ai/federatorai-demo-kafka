@@ -536,8 +536,15 @@ check_up_env()
     while read name status roles _junk
     do
         if [[ $roles == *"compute"* ]] || [[ $roles == *"worker"* ]]; then
-            mem=`kubectl get node $name -o 'jsonpath={.status.capacity.memory}'|egrep -o "[0-9]*"`
-            echo "$name $mem" >> $node_list_file
+            mem_raw=`kubectl get node $name -o 'jsonpath={.status.capacity.memory}'`
+            mem_unit=`echo -n "$mem_raw"|tail -c 2`
+            mem_number=`echo -n "$mem_raw"|egrep -o "[0-9]*"`
+            if [ "$mem_unit" = "Mi" ]; then
+                mem_number="$((mem_number * 1024 ))"
+            elif [ "$mem_unit" = "Gi" ]; then
+                mem_number="$((mem_number * 1024 * 1024 ))"
+            fi
+            echo "$name $mem_number" >> $node_list_file
         fi
     done <<< "$(kubectl get nodes|grep -v ROLES)"
     sleep 1
