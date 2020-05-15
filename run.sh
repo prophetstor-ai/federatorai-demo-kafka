@@ -830,7 +830,7 @@ if [ "$#" -eq "0" ]; then
     exit
 fi
 
-[ "$max_wait_pods_ready_time" = "" ] && max_wait_pods_ready_time=900  # maximum wait time for pods become ready
+[ "$max_wait_pods_ready_time" = "" ] && max_wait_pods_ready_time=1500  # maximum wait time for pods become ready
 [ "$avoid_metrics_interferece_sleep" = "" ] && avoid_metrics_interferece_sleep=600  # maximum wait time for pods become ready
 
 while getopts "i:t:f:n:o:hc:v:g:zx:s:" o; do
