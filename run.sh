@@ -170,6 +170,14 @@ set_alamedascaler_execution_value()
 
 }
 
+remove_alamedascaler()
+{
+    scaler_name=`kubectl get alamedascaler -n $strimzi_installed_ns -o name`
+    if [ "$scaler_name" != "" ]; then
+        kubectl delete -n $strimzi_installed_ns $scaler_name
+    fi
+}
+
 modify_define_parameter()
 {
     run_duration="$1"
@@ -283,6 +291,7 @@ run_federatorai_hpa_test()
     federatorai_test_folder_name="federatorai_hpa_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     federatorai_test_folder_short_name="fedai${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$federatorai_test_folder_name
+    apply_alamedascaler
     set_alamedascaler_execution_value "true"
 
     start=`date +%s`
@@ -315,7 +324,8 @@ run_nonhpa_hpa_test()
     nonhpa_test_folder_name="non_hpa_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     nonhpa_test_folder_short_name="nonhpa${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$nonhpa_test_folder_name
-    set_alamedascaler_execution_value "false"
+    remove_alamedascaler
+    #set_alamedascaler_execution_value "false"
 
     start=`date +%s`
     python -u run_main.py hpa consumer |tee -i $file_folder/$nonhpa_test_folder_name/console_output.log
@@ -344,6 +354,7 @@ run_native_k8s_hpa_cpu_test()
     native_hpa_test_folder_name="native_hpa_cpu${cpu_percent}_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     native_hpa_test_folder_short_name="k8shpa${cpu_percent}c${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$native_hpa_test_folder_name
+    apply_alamedascaler
     set_alamedascaler_execution_value "false"
 
     start=`date +%s`
@@ -374,6 +385,7 @@ run_native_k8s_hpa_lag_test()
     native_hpa_test_folder_name="native_hpa_lag_target${target_average_value}_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     native_hpa_test_folder_short_name="k8shpa${target_average_value}t${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$native_hpa_test_folder_name
+    apply_alamedascaler
     set_alamedascaler_execution_value "false"
 
     start=`date +%s`
@@ -1014,7 +1026,6 @@ if [ "$prepare_env_specified" = "y" ]; then
 fi
 
 check_kafka_exist
-apply_alamedascaler
 configure_native_hpa
 
 previous_test="n"
