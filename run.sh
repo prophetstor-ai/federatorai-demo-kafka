@@ -20,6 +20,7 @@ show_usage()
             [-g Native HPA (Lag) test duration(min)] # e.g. -g 40
         Support only options:
             [-x Folder1,Folder2] # Display comparison table. e.g. -x native_hpa_folder,federatorai_hpa_folder
+            [-m apply alamedascaler] # alamedascaler switch e.g. -m false
 
 
 __EOF__
@@ -156,6 +157,9 @@ find_test_result_folder_name()
 set_alamedascaler_execution_value()
 {
     enable_value="$1"
+    if [ "$apply_scaler_switch" = "false" ]; then
+        return
+    fi
     current_value=`kubectl get alamedascaler test-kafka -n $strimzi_installed_ns -o jsonpath='{.spec.enableExecution}'`
     if [ "$enable_value" = "$current_value" ]; then
         return
@@ -172,10 +176,10 @@ set_alamedascaler_execution_value()
 
 remove_alamedascaler()
 {
-    scaler_name=`kubectl get alamedascaler -n $strimzi_installed_ns -o name`
-    if [ "$scaler_name" != "" ]; then
+    for scaler_name in `kubectl get alamedascaler -n $strimzi_installed_ns -o name`
+    do
         kubectl delete -n $strimzi_installed_ns $scaler_name
-    fi
+    done
 }
 
 modify_define_parameter()
@@ -291,7 +295,6 @@ run_federatorai_hpa_test()
     federatorai_test_folder_name="federatorai_hpa_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     federatorai_test_folder_short_name="fedai${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$federatorai_test_folder_name
-    apply_alamedascaler
     set_alamedascaler_execution_value "true"
 
     start=`date +%s`
@@ -324,8 +327,7 @@ run_nonhpa_hpa_test()
     nonhpa_test_folder_name="non_hpa_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     nonhpa_test_folder_short_name="nonhpa${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$nonhpa_test_folder_name
-    remove_alamedascaler
-    #set_alamedascaler_execution_value "false"
+    set_alamedascaler_execution_value "false"
 
     start=`date +%s`
     python -u run_main.py hpa consumer |tee -i $file_folder/$nonhpa_test_folder_name/console_output.log
@@ -354,7 +356,6 @@ run_native_k8s_hpa_cpu_test()
     native_hpa_test_folder_name="native_hpa_cpu${cpu_percent}_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     native_hpa_test_folder_short_name="k8shpa${cpu_percent}c${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$native_hpa_test_folder_name
-    apply_alamedascaler
     set_alamedascaler_execution_value "false"
 
     start=`date +%s`
@@ -385,7 +386,6 @@ run_native_k8s_hpa_lag_test()
     native_hpa_test_folder_name="native_hpa_lag_target${target_average_value}_${run_duration}min_${initial_consumer_number}con_${partition_number}par_`date +%s`"
     native_hpa_test_folder_short_name="k8shpa${target_average_value}t${run_duration}m${initial_consumer_number}i${partition_number}p${alameda_version}B"
     mkdir -p $file_folder/$native_hpa_test_folder_name
-    apply_alamedascaler
     set_alamedascaler_execution_value "false"
 
     start=`date +%s`
@@ -845,7 +845,7 @@ fi
 [ "$max_wait_pods_ready_time" = "" ] && max_wait_pods_ready_time=1500  # maximum wait time for pods become ready
 [ "$avoid_metrics_interferece_sleep" = "" ] && avoid_metrics_interferece_sleep=600  # maximum wait time for pods become ready
 
-while getopts "i:t:f:n:o:hc:v:g:zx:s:" o; do
+while getopts "i:m:t:f:n:o:hc:v:g:zx:s:" o; do
     case "${o}" in
         # u)
         #     username_specified="y"
@@ -899,6 +899,10 @@ while getopts "i:t:f:n:o:hc:v:g:zx:s:" o; do
         x)
             comparison_specified="y"
             comparison_folders=${OPTARG}
+            ;;
+        m)
+            apply_scaler_specified="y"
+            apply_scaler_switch=${OPTARG}
             ;;
         z)
             prepare_env_specified="y"
@@ -970,6 +974,15 @@ if [ "$comparison_specified" = "y" ]; then
     exit
 fi
 
+if [ "$apply_scaler_specified" = "y" ]; then
+    if [ "$apply_scaler_switch" != "true" ] && [ "$apply_scaler_switch" != "false" ]; then
+         echo -e "\n$(tput setaf 1)Error! -m option must be followed by true or false. e.g. -m false $(tput sgr 0)" && show_usage
+    fi
+else
+    # Default value = true
+    apply_scaler_switch="true"
+fi
+
 # Check if kubectl connect to server.
 result="`echo ""|kubectl cluster-info 2>/dev/null`"
 if [ "$?" != "0" ];then
@@ -1026,6 +1039,12 @@ if [ "$prepare_env_specified" = "y" ]; then
 fi
 
 check_kafka_exist
+if [ "$apply_scaler_switch" = "false" ]; then
+    remove_alamedascaler
+else
+    apply_alamedascaler
+fi
+
 configure_native_hpa
 
 previous_test="n"
