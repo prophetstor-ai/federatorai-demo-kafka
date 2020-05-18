@@ -8,6 +8,10 @@ show_usage()
         Requirement:
             [-i Initial consumer pod number] # e.g. -i 40
             [-t Partition number] # e.g. -t 40
+            [-k OpenShift kubeconfig file] # e.g. -k .kubeconfig
+                File .kubeconfig can be created by using the following command.
+                sh -c "export KUBECONFIG=.kubeconfig; oc login <K8s_LOGIN_URL>"
+                e.g. sh -c "export KUBECONFIG=.kubeconfig; oc login https://api.ocp4.example.com:6443"
         Optional options:
             [-c Native HPA cpu percent] # For Native HPA (CPU) test, run with -o option. e.g. -o 40 -c 20
             [-v Native HPA target average value] # For Native HPA (Lag) test, run with -g option. e.g. -g 40 -v 10000
@@ -845,7 +849,7 @@ fi
 [ "$max_wait_pods_ready_time" = "" ] && max_wait_pods_ready_time=1500  # maximum wait time for pods become ready
 [ "$avoid_metrics_interferece_sleep" = "" ] && avoid_metrics_interferece_sleep=600  # maximum wait time for pods become ready
 
-while getopts "i:m:t:f:n:o:hc:v:g:zx:s:" o; do
+while getopts "i:m:t:f:n:o:hc:v:k:g:zx:s:" o; do
     case "${o}" in
         # u)
         #     username_specified="y"
@@ -871,6 +875,9 @@ while getopts "i:m:t:f:n:o:hc:v:g:zx:s:" o; do
         t)
             partition_number_specified="y"
             partition_number=${OPTARG}
+            ;;
+        k)
+            kubeconfig=${OPTARG}
             ;;
         f)
             federatorai_test="y"
@@ -960,6 +967,25 @@ if [ "$federatorai_test" = "y" ] || [ "$nonhpa_test" = "y" ] || [ "$native_cpu_t
     esac
 fi
 
+# Might add other standaloone cases
+if [ "$comparison_specified" != "y" ]; then
+
+    if [ "${kubeconfig}" = "" ]; then
+        echo -e "\n$(tput setaf 1)Error! Need to use \"-k\" to specify OpenShift kubeconfig file.$(tput sgr 0)"
+        show_usage
+    fi
+    export KUBECONFIG=${kubeconfig}
+
+    ## Checking if cluster ready to use
+    if [ "`oc get ns kube-system | grep '^kube-system'`" = "" ]; then
+        echo -e "\n$(tput setaf 1)Error! Failed in using K8S cluster.$(tput sgr 0)"
+        exit
+    fi
+    result="`echo ""|kubectl cluster-info 2>/dev/null |head -1`"
+    current_server="`echo $result|sed 's/.*at //'|awk '{print $1}'`"
+    echo "You are connecting to cluster: $current_server"
+fi
+
 if [ "$comparison_specified" = "y" ]; then
     first_folder=`echo $comparison_folders|cut -s -d ',' -f1`
     second_folder=`echo $comparison_folders|cut -s -d ',' -f2`
@@ -984,13 +1010,7 @@ else
 fi
 
 # Check if kubectl connect to server.
-result="`echo ""|kubectl cluster-info 2>/dev/null`"
-if [ "$?" != "0" ];then
-    echo -e "\n$(tput setaf 1)Error! Please login into OpenShift cluster first.$(tput sgr 0)"
-    exit
-fi
-current_server="`echo $result|sed 's/.*at //'|awk '{print $1}'`"
-echo "You are connecting to cluster: $current_server"
+
 
 echo "Checking OpenShift version..."
 check_version
