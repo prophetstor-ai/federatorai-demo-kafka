@@ -93,7 +93,7 @@ def main(algo, count):
     c.describe_consumer_group(group_name)
     for i in range(interval):
         transaction_list = p.read_transaction_list()
-        count1 = count % traffic_interval
+        count1 = count % len(transaction_list)
         transaction = int(transaction_list[count1])
         if workload_type == "fix":
             transaction = transaction_value
