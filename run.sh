@@ -313,8 +313,11 @@ run_federatorai_hpa_test()
     echo -e "$(tput setaf 6)Average Replica is $(tput sgr 0)$(tput setaf 10)\"$federatorai_avg_replicas\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Result files are under $file_folder/$federatorai_test_folder_name $(tput sgr 0)"
 
+    # Do clean up
     # Turn off execution before next test
     set_alamedascaler_execution_value "false"
+    hpa_cleanup
+    ./cleanup.sh
 }
 
 run_nonhpa_hpa_test()
@@ -344,6 +347,10 @@ run_nonhpa_hpa_test()
     echo -e "$(tput setaf 6)Average Consumer Group Lag is $(tput sgr 0)$(tput setaf 10)\"$nonhpa_avg_lag\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Average Replica is $(tput sgr 0)$(tput setaf 10)\"$nonhpa_avg_replicas\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Result files are under $file_folder/$nonhpa_test_folder_name $(tput sgr 0)"
+
+    # Do clean up
+    hpa_cleanup
+    ./cleanup.sh
 }
 
 run_native_k8s_hpa_cpu_test()
@@ -374,6 +381,10 @@ run_native_k8s_hpa_cpu_test()
     echo -e "$(tput setaf 6)Average Consumer Group Lag is $(tput sgr 0)$(tput setaf 10)\"$native_hpa_cpu_test_avg_lag\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Average Replica is $(tput sgr 0)$(tput setaf 10)\"$native_hpa_cpu_test_avg_replicas\"$(tput sgr 0)"
     echo -e "Result files are under $file_folder/$native_hpa_test_folder_name $(tput sgr 0)"
+
+    # Do clean up
+    hpa_cleanup
+    ./cleanup.sh
 }
 
 run_native_k8s_hpa_lag_test()
@@ -404,6 +415,10 @@ run_native_k8s_hpa_lag_test()
     echo -e "$(tput setaf 6)Average Consumer Group Lag is $(tput sgr 0)$(tput setaf 10)\"$native_hpa_lag_test_avg_lag\"$(tput sgr 0)"
     echo -e "$(tput setaf 6)Average Replica is $(tput sgr 0)$(tput setaf 10)\"$native_hpa_lag_test_avg_replicas\"$(tput sgr 0)"
     echo -e "Result files are under $file_folder/$native_hpa_test_folder_name $(tput sgr 0)"
+
+    # Do clean up
+    hpa_cleanup
+    ./cleanup.sh
 }
 
 display_final_result_if_available()
