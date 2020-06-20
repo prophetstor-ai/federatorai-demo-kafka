@@ -4,7 +4,7 @@ metadata:
   name: test-kafka
   namespace: myproject
 spec:
-  enableExecution: true
+  enableExecution: false
   kafka:
     consumerGroups:
     - name: group0001
