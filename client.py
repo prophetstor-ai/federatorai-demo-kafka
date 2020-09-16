@@ -177,6 +177,17 @@ class Client(object):
         print output
         return output
 
+    def set_log_retention_to_topic(self, topic_name):
+        print "set topic:", topic_name
+        ns, broker_list = self.find_broker_pod()
+        broker = broker_list[0]
+        cmd = "/opt/kafka/bin/kafka-configs.sh --alter --entity-type topics --entity-name %s --add-config retention.ms=86400000 --zookeeper=localhost:2181" % (topic_name)
+        print cmd
+        print broker
+        output = self.oc.exec_cmd(ns, broker, cmd)
+        print output
+        return output
+
     def list_consumer_group(self):
         # print "--- list consumer group ---"
         group_list = []
