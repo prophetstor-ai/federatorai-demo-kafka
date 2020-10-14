@@ -180,8 +180,9 @@ class Client(object):
     def set_log_retention_to_topic(self, topic_name):
         print "set topic:", topic_name
         ns, broker_list = self.find_broker_pod()
+        ns, ip, port = self.find_zookeeper_ip()
         broker = broker_list[0]
-        cmd = "/opt/kafka/bin/kafka-configs.sh --alter --entity-type topics --entity-name %s --add-config retention.ms=86400000 --zookeeper=localhost:2181" % (topic_name)
+        cmd = "/opt/kafka/bin/kafka-configs.sh --alter --entity-type topics --entity-name %s --add-config retention.ms=86400000 --zookeeper=%s:%s" % (topic_name, ip, port)
         print cmd
         print broker
         output = self.oc.exec_cmd(ns, broker, cmd)
