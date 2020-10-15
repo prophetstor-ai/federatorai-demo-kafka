@@ -161,7 +161,6 @@ def initial_environment():
     wait_time(180)
     c = Client()
     c.modify_topic(topic_name, partition_number)
-    c.set_log_retention_to_topic(topic_name)
 
 
 def do_main(args):
